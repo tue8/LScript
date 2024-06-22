@@ -67,7 +67,7 @@ static std::string stringify(std::any value)
   return std::any_cast<std::string>(value);
 }
 
-void Interpreter::interpret(std::list<Stmt*> statements)
+void Interpreter::interpret(std::list<std::unique_ptr<Stmt>> statements)
 {
   try
   {
@@ -87,14 +87,11 @@ void Interpreter::interpret(std::list<Stmt*> statements)
 /* I fucking hate myself */
 std::any Interpreter::visitWhileStmt(While& stmt)
 {
-  Expr& condition = (Expr&)stmt.getCondition();
-  std::any val = condition.accept(*this);
+  std::any val = evaluate(stmt.getCondition());
   while (isTruthy(val))
   {
-    Stmt& body = (Stmt&)stmt.getBody();
-    body.accept(*this);
-    condition = (Expr&)stmt.getCondition();
-    val = condition.accept(*this);
+    execute(stmt.getBody());
+    val = evaluate(stmt.getCondition());
   }
   return std::any();
 }
@@ -141,7 +138,6 @@ std::any Interpreter::visitBlockStmt(Block& stmt)
   this->env = Environment(&prev);
 
   // First reference (&) to the std::unique_ptr avoids the copying
-  // Second reference so you can use the std::unique_ptr without dereferencing
   for (const auto& statement : stmt.getStatements())
     if (statement != nullptr)
       execute(*statement);
@@ -182,10 +178,8 @@ std::any Interpreter::visitLogicalExpr(Logical& expr)
 
 std::any Interpreter::visitBinaryExpr(Binary& expr)
 {
-  Expr& leftExpr = (Expr&)expr.getLeft();
-  Expr& rightExpr = (Expr&)expr.getRight();
-  std::any left = leftExpr.accept(*this);
-  std::any right = rightExpr.accept(*this);
+  std::any left = evaluate(expr.getLeft());
+  std::any right = evaluate(expr.getRight());
 
   switch (expr.getOp().type)
   {

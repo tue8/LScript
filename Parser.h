@@ -7,7 +7,7 @@ class Parser
 {
 public:
   Parser(const std::vector<Token>& tokens) : tokens(tokens) {}
-  std::list<Stmt*> parse();
+  std::list<std::unique_ptr<Stmt>> parse();
 private:
   std::unique_ptr<Stmt> declaration();
   std::unique_ptr<Stmt> varDeclaration();

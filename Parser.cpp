@@ -92,11 +92,13 @@ static void error(const Token& token, std::string msg)
     std::cerr << "[" << token.line << "] at '" << token.lexeme << "': " << msg << std::endl;
 }
 
-std::list<Stmt*> Parser::parse()
+std::list<std::unique_ptr<Stmt>> Parser::parse()
 {
-  std::list<Stmt*> statements;
+  std::list<std::unique_ptr<Stmt>> statements;
   while (!isAtEnd())
-    statements.push_back(declaration().get());
+  {
+    statements.push_back(std::move(declaration()));
+  }
   return statements;
 }
 

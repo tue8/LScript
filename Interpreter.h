@@ -7,7 +7,7 @@
 class Interpreter : public ExprVisitor<std::any>, public StmtVisitor<std::any>
 {
 public:
-	void interpret(std::list<Stmt*> statements);
+	void interpret(std::list<std::unique_ptr<Stmt>> statements);
 private:
 	std::any execute(Stmt& stmt);
 	std::any evaluate(Expr& expr);

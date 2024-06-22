@@ -1,8 +1,0 @@
-# ninja log v5
-32	1713	7406452145588187	CMakeFiles/LScript.dir/Environment.cpp.obj	25dca7fdd5eb9ccd
-14	1766	7406452146213172	CMakeFiles/LScript.dir/AstPrinter.cpp.obj	d78741f51572518c
-25	2221	7406452150900690	CMakeFiles/LScript.dir/Interpreter.cpp.obj	4b72fb267de3ce9
-4	2273	7406452151369504	CMakeFiles/LScript.dir/LScript.cpp.obj	dc54f7920dee190d
-9	2453	7406452153387759	CMakeFiles/LScript.dir/Lexer.cpp.obj	3ce594897580f4e5
-19	2578	7406452154638050	CMakeFiles/LScript.dir/Parser.cpp.obj	1632dc0b3f147fcb
-2578	2766	7406452156403116	LScript.exe	e0cbdcb8e9d0bf49

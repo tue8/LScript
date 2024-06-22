@@ -1,3 +1,0 @@
-C:/Users/ndtl/source/repos/LScript/out/build/x86-release/CMakeFiles/LScript.dir
-C:/Users/ndtl/source/repos/LScript/out/build/x86-release/CMakeFiles/edit_cache.dir
-C:/Users/ndtl/source/repos/LScript/out/build/x86-release/CMakeFiles/rebuild_cache.dir

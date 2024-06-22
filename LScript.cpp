@@ -14,9 +14,9 @@ static void run(std::string str)
 	Lexer lexer = Lexer(str);
 	std::vector<Token> tokens = lexer.lexAll();
 	Parser parser = Parser(tokens);
-	std::list<Stmt*> stmt_list = parser.parse();
+	std::list<std::unique_ptr<Stmt>> stmt_list = parser.parse();
 	if (!stmt_list.empty())
-		interpreter.interpret(stmt_list);
+		interpreter.interpret(std::move(stmt_list));
 }
 
 static int runFile(char *script_name)
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 	}
 
 #ifdef LDEBUG
-	return runFile((char *)"../scripts/script.ls");
+	return runFile((char *)"script.ls");
 #else
 	return (argc == 2) ? runFile(argv[1]) : runPrompt();
 #endif
