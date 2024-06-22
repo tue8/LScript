@@ -1,0 +1,3 @@
+C:/Users/ndtl/source/repos/LScript/out/build/x64-debug/CMakeFiles/LScript.dir
+C:/Users/ndtl/source/repos/LScript/out/build/x64-debug/CMakeFiles/edit_cache.dir
+C:/Users/ndtl/source/repos/LScript/out/build/x64-debug/CMakeFiles/rebuild_cache.dir

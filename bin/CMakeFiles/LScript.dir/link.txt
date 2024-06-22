@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -DLDEBUG CMakeFiles/LScript.dir/LScript.cpp.o CMakeFiles/LScript.dir/Lexer.cpp.o CMakeFiles/LScript.dir/Parser.cpp.o CMakeFiles/LScript.dir/Interpreter.cpp.o CMakeFiles/LScript.dir/Environment.cpp.o -o LScript 
