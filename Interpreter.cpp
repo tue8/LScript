@@ -98,15 +98,10 @@ std::any Interpreter::visitWhileStmt(While& stmt)
 
 std::any Interpreter::visitIfStmt(If& stmt)
 {
-  /*
-   * we cant call stmt.getEle() 2 times since after we call it the first time
-   * the elseBranch in the class becomes null from ), we "moved" it somewhere else.
-   */
-  Stmt& elseBranch = stmt.getElse();
   if (isTruthy(evaluate(stmt.getCondition())))
     execute(stmt.getThen());
-  else if (&elseBranch != nullptr)
-    execute(elseBranch);
+  else if (stmt.hasElse())
+    execute(stmt.getElse());
   return std::any();
 }
 

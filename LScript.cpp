@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 	}
 
 #ifdef LDEBUG
-	return runFile((char *)"script.ls");
+	return runFile((char *)"../scripts/script.ls");
 #else
 	return (argc == 2) ? runFile(argv[1]) : runPrompt();
 #endif

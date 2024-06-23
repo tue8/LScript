@@ -3,7 +3,8 @@
 #include <memory>
 #include <any>
 #include <string>
-#include "Expr.h" #include "Environment.h"
+#include "Expr.h"
+#include "Environment.h"
 #include <vector>
 
 class If;
@@ -38,7 +39,9 @@ public:
 		: condition(std::move(condition)),
 			thenBranch(std::move(thenBranch)),
 			elseBranch(std::move(elseBranch))
-	{}
+	{
+    elseExist = (elseBranch == nullptr);
+  }
 
 	std::any accept(StmtVisitor<std::any>& visitor) override
 	{
@@ -59,10 +62,16 @@ public:
 	{
 		return *elseBranch;
 	}
+
+  bool hasElse()
+  {
+    return elseExist;
+  }
 private:
 	std::unique_ptr<Expr> condition;
 	std::unique_ptr<Stmt> thenBranch;
 	std::unique_ptr<Stmt> elseBranch;
+  bool elseExist;
 };
 
 
