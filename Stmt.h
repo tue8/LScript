@@ -7,6 +7,8 @@
 #include "Environment.h"
 #include <vector>
 
+class Break;
+class Continue;
 class If;
 class Block;
 class Expression;
@@ -18,6 +20,8 @@ template <typename T>
 class StmtVisitor
 {
 public:
+	virtual T visitBreakStmt(Break& stmt) = 0;
+	virtual T visitContinueStmt(Continue& stmt) = 0;
 	virtual T visitIfStmt(If& stmt) = 0;
 	virtual T visitBlockStmt(Block& stmt) = 0;
 	virtual T visitExpressionStmt(Expression& stmt) = 0;
@@ -32,6 +36,22 @@ public:
 	virtual std::any accept(StmtVisitor<std::any>& visitor) = 0;
 };
 
+class Break : public Stmt
+{
+  std::any accept(StmtVisitor<std::any>& visitor) override
+	{
+		return visitor.visitBreakStmt(*this);
+	}
+};
+
+class Continue : public Stmt
+{
+  std::any accept(StmtVisitor<std::any>& visitor) override
+	{
+		return visitor.visitContinueStmt(*this);
+	}
+};
+
 class If : public Stmt
 {
 public:
@@ -39,9 +59,7 @@ public:
 		: condition(std::move(condition)),
 			thenBranch(std::move(thenBranch)),
 			elseBranch(std::move(elseBranch))
-	{
-    elseExist = (elseBranch == nullptr);
-  }
+	{}
 
 	std::any accept(StmtVisitor<std::any>& visitor) override
 	{
@@ -65,13 +83,12 @@ public:
 
   bool hasElse()
   {
-    return elseExist;
+    return (elseBranch != nullptr);
   }
 private:
 	std::unique_ptr<Expr> condition;
 	std::unique_ptr<Stmt> thenBranch;
 	std::unique_ptr<Stmt> elseBranch;
-  bool elseExist;
 };
 
 
@@ -159,6 +176,11 @@ public:
 	{
 		return *initializer;
 	}
+  
+  bool hasInitializer()
+  {
+    return (initializer != nullptr);
+  }
 
 private:
 	Token name;

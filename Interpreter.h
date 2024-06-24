@@ -11,6 +11,8 @@ public:
 private:
 	std::any execute(Stmt& stmt);
 	std::any evaluate(Expr& expr);
+	std::any visitBreakStmt(Break& stmt) override;
+	std::any visitContinueStmt(Continue& stmt) override;
 	std::any visitWhileStmt(While& stmt) override;
 	std::any visitIfStmt(If& stmt) override;
 	std::any visitExpressionStmt(Expression& stmt) override;

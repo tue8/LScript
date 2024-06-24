@@ -84,15 +84,33 @@ void Interpreter::interpret(std::list<std::unique_ptr<Stmt>> statements)
   }
 }
 
-/* I fucking hate myself */
+std::any Interpreter::visitBreakStmt(Break& stmt)
+{
+  throw BREAK;
+}
+
+std::any Interpreter::visitContinueStmt(Continue& stmt)
+{
+  throw CONTINUE;
+}
+
 std::any Interpreter::visitWhileStmt(While& stmt)
 {
-  std::any val = evaluate(stmt.getCondition());
-  while (isTruthy(val))
+  while (isTruthy(evaluate(stmt.getCondition())))
   {
-    execute(stmt.getBody());
-    val = evaluate(stmt.getCondition());
+    try
+    {
+      execute(stmt.getBody());
+    }
+    catch (TokenType loopSignal)
+    {
+      if (loopSignal == BREAK) 
+        break;
+      else
+        continue;
+    }
   }
+
   return std::any();
 }
 
@@ -121,7 +139,7 @@ std::any Interpreter::visitVarStmt(Var& stmt)
 {
   std::any value;
   Expr& initializer = stmt.getInitializer();
-  if (&initializer != nullptr)
+  if (stmt.hasInitializer())
     value = evaluate(initializer);
   env.define(stmt.getName().lexeme, value);
   return std::any();

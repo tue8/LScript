@@ -20,6 +20,8 @@ Lexer::Lexer(std::string src)
   keywords["true"] = TRUE;
   keywords["var"] = VAR;
   keywords["while"] = WHILE;
+  keywords["break"] = BREAK;
+  keywords["continue"] = CONTINUE;
 }
 
 bool Lexer::isAtEnd()

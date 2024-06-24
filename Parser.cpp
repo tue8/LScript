@@ -1,7 +1,9 @@
 #include "Parser.h"
+#include "Stmt.h"
 #include "Token.h"
 #include <any>
 #include <iostream>
+#include <memory>
 #include <utility>
 
 /*
@@ -86,10 +88,10 @@ bool Parser::check(TokenType type)
 
 static void error(const Token& token, std::string msg)
 {
-  if (token.type == EOF)
-    std::cerr << "[" << token.line << "] at end: " << msg << std::endl;
+  if (token.type == _EOF_)
+    std::cerr << "PARSER ERROR: [" << token.line << "] at end: " << msg << std::endl;
   else
-    std::cerr << "[" << token.line << "] at '" << token.lexeme << "': " << msg << std::endl;
+    std::cerr << "PARSER ERROR: [" << token.line << "] at '" << token.lexeme << "': " << msg << std::endl;
 }
 
 std::list<std::unique_ptr<Stmt>> Parser::parse()
@@ -129,15 +131,26 @@ std::unique_ptr<Stmt> Parser::varDeclaration()
 
 std::unique_ptr<Stmt> Parser::statement()
 {
-  if (match(WHILE))
-    return std::move(whileStatement());
-  if (match(IF))
-    return std::move(ifStatement());
-  if (match(PRINT))
-    return std::move(printStatement());
-  if (match(LEFT_BRACE))
-    return std::make_unique<Block>(block());
+  if (match(BREAK))      return std::move(breakStatement());
+  if (match(CONTINUE))   return std::move(continueStatement());
+  if (match(FOR))        return std::move(forStatement());
+  if (match(WHILE))      return std::move(whileStatement());
+  if (match(IF))         return std::move(ifStatement());
+  if (match(PRINT))      return std::move(printStatement());
+  if (match(LEFT_BRACE)) return std::make_unique<Block>(block());
   return std::move(expressionStatement());
+}
+
+std::unique_ptr<Stmt> Parser::breakStatement()
+{
+  consume(SEMICOLON, "You did not place ';' after break... *sigh* Give me a break... Let's break up.");
+  return std::make_unique<Break>();  
+}
+
+std::unique_ptr<Stmt> Parser::continueStatement()
+{
+  consume(SEMICOLON, "Expected ';' after continue.");
+  return std::make_unique<Continue>();
 }
 
 std::vector<std::unique_ptr<Stmt>> Parser::block()
@@ -147,6 +160,40 @@ std::vector<std::unique_ptr<Stmt>> Parser::block()
     statements.push_back(declaration());
   consume(RIGHT_BRACE, "Expected '}' after block.");
   return statements;
+}
+
+std::unique_ptr<Stmt> Parser::forStatement()
+{
+  consume(LEFT_PAREN, "Expected '(' after 'for'");
+  std::unique_ptr<Stmt> initializer;
+
+  if (match(SEMICOLON)) initializer = nullptr;
+  else if (match(VAR))  initializer = varDeclaration();
+  else                  initializer = expressionStatement();
+
+  auto condition = (!check(SEMICOLON)) ? expression() : nullptr;
+  consume(SEMICOLON, "Expected ';' after for loop condition");
+  auto increment = (!check(RIGHT_PAREN)) ? expression() : nullptr;
+  consume(RIGHT_PAREN, "Expected ')' after to after for loop");
+  std::unique_ptr<Stmt> body = statement();
+  std::vector<std::unique_ptr<Stmt>> bodyVec;
+  if (increment != nullptr)
+  {
+    bodyVec.push_back(std::move(body));
+    bodyVec.push_back(std::make_unique<Expression>(std::move(increment)));
+    body = std::make_unique<Block>(std::move(bodyVec));
+  }
+  if (condition == nullptr)
+    condition = std::make_unique<Literal>(true);
+  body = std::make_unique<While>(std::move(condition), std::move(body));
+  if (initializer != nullptr)
+  {
+    bodyVec.clear();
+    bodyVec.push_back(std::move(initializer));
+    bodyVec.push_back(std::move(body));
+    body = std::make_unique<Block>(std::move(bodyVec));
+  }
+  return body;
 }
 
 std::unique_ptr<Stmt> Parser::expressionStatement()
@@ -184,21 +231,12 @@ std::unique_ptr<Stmt> Parser::printStatement()
 
 std::unique_ptr<Expr> Parser::primary()
 {
-  if (match(FALSE))
-    return std::make_unique<Literal>(false);
-
-  if (match(TRUE))
-    return std::make_unique<Literal>(true);
-
-  if (match(NIL))
-    return std::make_unique<Literal>(std::any());
-
+  if (match(FALSE))      return std::make_unique<Literal>(false);
+  if (match(TRUE))       return std::make_unique<Literal>(true);
+  if (match(NIL))        return std::make_unique<Literal>(std::any());
+  if (match(IDENTIFIER)) return std::make_unique<Variable>(previous());
   if (match(NUMBER) || match(STRING))
     return std::make_unique<Literal>(previous().lit);
-
-  if (match(IDENTIFIER))
-    return std::make_unique<Variable>(previous());
-
   if (match(LEFT_PAREN))
   {
     auto grExpr = expression();

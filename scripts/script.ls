@@ -1,16 +1,8 @@
-var a = 100;
-var msg;
+/*
+ * this is a LScript for loop test :P
+ */
 
-while (a > 0)
+for (var i = 0; i <= 20; i = i + 2)
 {
-  if (a > 50)
-  {
-    msg = "Greater";
-  }
-  else
-  {
-    msg = "Not greater";
-  }
-  print msg + " than 50: " + a;
-  a = a - 1; 
+  print i;
 }
