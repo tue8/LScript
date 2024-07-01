@@ -7,6 +7,8 @@
 #include "Environment.h"
 #include <vector>
 
+class Return;
+class Function;
 class Break;
 class Continue;
 class If;
@@ -20,6 +22,8 @@ template <typename T>
 class StmtVisitor
 {
 public:
+	virtual T visitReturnStmt(Return& stmt) = 0;
+	virtual T visitFunctionStmt(Function& stmt) = 0;
 	virtual T visitBreakStmt(Break& stmt) = 0;
 	virtual T visitContinueStmt(Continue& stmt) = 0;
 	virtual T visitIfStmt(If& stmt) = 0;
@@ -36,8 +40,69 @@ public:
 	virtual std::any accept(StmtVisitor<std::any>& visitor) = 0;
 };
 
+class Return : public Stmt
+{
+public:
+	Return(const Token& token, std::unique_ptr<Expr> value)
+		: token(token),
+			value(std::move(value))
+	{}
+
+	std::any accept(StmtVisitor<std::any>& visitor) override
+	{
+		return visitor.visitReturnStmt(*this);
+	}
+
+	const Token& getToken()
+	{
+		return token;
+	}
+
+	Expr& getValue()
+	{
+		return *value;
+	}
+private:
+	Token token;
+	std::unique_ptr<Expr> value;
+};
+
+
+class Function : public Stmt
+{
+public:
+	Function(const Token& name, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body)
+  : name(name), params(params), body(std::move(body))
+  {}
+
+  std::any accept(StmtVisitor<std::any>& visitor) override
+	{
+		return visitor.visitFunctionStmt(*this);
+	}
+
+  const Token& getName()
+	{
+		return name;
+	}
+
+	const std::vector<Token>& getParams()
+	{
+		return params;
+	}
+
+	const std::vector<std::unique_ptr<Stmt>>& getBody()
+	{
+		return body;
+	}
+private:
+  Token name;
+  std::vector<Token> params;
+  std::vector<std::unique_ptr<Stmt>> body;
+};
+
 class Break : public Stmt
 {
+public:
   std::any accept(StmtVisitor<std::any>& visitor) override
 	{
 		return visitor.visitBreakStmt(*this);
@@ -46,6 +111,7 @@ class Break : public Stmt
 
 class Continue : public Stmt
 {
+public:
   std::any accept(StmtVisitor<std::any>& visitor) override
 	{
 		return visitor.visitContinueStmt(*this);

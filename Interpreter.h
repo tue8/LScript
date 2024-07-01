@@ -8,9 +8,13 @@ class Interpreter : public ExprVisitor<std::any>, public StmtVisitor<std::any>
 {
 public:
 	void interpret(std::list<std::unique_ptr<Stmt>> statements);
+  Environment getGlobalEnv();
+  void executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment env);
 private:
 	std::any execute(Stmt& stmt);
 	std::any evaluate(Expr& expr);
+	std::any visitReturnStmt(Return& stmt) override;
+	std::any visitFunctionStmt(Function& stmt) override;
 	std::any visitBreakStmt(Break& stmt) override;
 	std::any visitContinueStmt(Continue& stmt) override;
 	std::any visitWhileStmt(While& stmt) override;
@@ -19,6 +23,7 @@ private:
 	std::any visitPrintStmt(Print& stmt) override;
 	std::any visitVarStmt(Var& stmt) override;
 	std::any visitBlockStmt(Block& stmt) override;
+	std::any visitCallExpr(Call& expr) override;
 	std::any visitLogicalExpr(Logical& expr) override;
 	std::any visitBinaryExpr(Binary& expr) override;
 	std::any visitGroupingExpr(Grouping& expr) override;
@@ -27,5 +32,6 @@ private:
 	std::any visitVariableExpr(Variable& expr) override;
 	std::any visitAssignExpr(Assign& expr) override;
 private:
-	Environment env;
+	Environment globals;
+	Environment environment;
 };

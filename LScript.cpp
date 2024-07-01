@@ -2,7 +2,6 @@
 #include <fstream>
 #include <sstream>
 
-#include "AstPrinter.h"
 #include "Parser.h"
 #include "Lexer.h"
 #include "Interpreter.h"
@@ -13,6 +12,12 @@ static void run(std::string str)
 {
 	Lexer lexer = Lexer(str);
 	std::vector<Token> tokens = lexer.lexAll();
+#ifdef LDEBUG
+  for (const auto& token : tokens)
+  {
+       std::cout << token << std::endl;
+  }
+#endif
 	Parser parser = Parser(tokens);
 	std::list<std::unique_ptr<Stmt>> stmt_list = parser.parse();
 	if (!stmt_list.empty())
@@ -53,7 +58,10 @@ int main(int argc, char **argv)
 	}
 
 #ifdef LDEBUG
-	return runFile((char *)"../scripts/script.ls");
+	std::string script;
+	std::cout << "Run script: ";
+	std::cin >> script;
+	return runFile((char*)std::string("../scripts/" + script).c_str());
 #else
 	return (argc == 2) ? runFile(argv[1]) : runPrompt();
 #endif

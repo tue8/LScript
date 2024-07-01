@@ -1,4 +1,5 @@
 #include "Interpreter.h"
+#include "Callable.h"
 #include <iostream>
 #include <utility>
 
@@ -9,9 +10,9 @@ return std::any_cast<double>(l) oprand std::any_cast<double>(r) \
 static void error(Token token, std::string msg)
 {
   if (token.type == _EOF_)
-    std::cerr << "[" << token.line << "] at end: " << msg << std::endl;
+    std::cerr << "INTERPRETER ERROR: [" << token.line << "] at end: " << msg << std::endl;
   else
-    std::cerr << "[" << token.line << "] at '" << token.lexeme << "': " << msg << std::endl;
+    std::cerr << "INTERPRETER ERROR: [" << token.line << "] at '" << token.lexeme << "': " << msg << std::endl;
 }
 
 bool isEqual(std::any a, std::any b)
@@ -71,17 +72,35 @@ void Interpreter::interpret(std::list<std::unique_ptr<Stmt>> statements)
 {
   try
   {
-    while (!statements.empty())
+    for (auto& statement : statements)
     {
-      if (statements.front() != nullptr)
-        execute(*(statements.front()));
-      statements.pop_front();
+      execute(*(statement));
     }
+    
+    // statements.pop_front() deletes parts of the trees so yeah pretty fucking terrible...
+    // Don't ever do that.
   }
   catch (std::pair<Token, std::string>& tokStr)
   {
     error(tokStr.first, tokStr.second);
   }
+}
+
+Environment Interpreter::getGlobalEnv()
+{
+  globals = environment;
+  return globals;
+}
+
+std::any Interpreter::visitReturnStmt(Return& stmt)
+{
+  throw evaluate(stmt.getValue());
+}
+
+std::any Interpreter::visitFunctionStmt(Function& stmt)
+{
+  environment.define(stmt.getName().lexeme, Callable(&stmt));
+  return std::any();
 }
 
 std::any Interpreter::visitBreakStmt(Break& stmt)
@@ -104,10 +123,8 @@ std::any Interpreter::visitWhileStmt(While& stmt)
     }
     catch (TokenType loopSignal)
     {
-      if (loopSignal == BREAK) 
-        break;
-      else
-        continue;
+      if (loopSignal == BREAK)         break;
+      else if (loopSignal == CONTINUE) continue;
     }
   }
 
@@ -141,20 +158,13 @@ std::any Interpreter::visitVarStmt(Var& stmt)
   Expr& initializer = stmt.getInitializer();
   if (stmt.hasInitializer())
     value = evaluate(initializer);
-  env.define(stmt.getName().lexeme, value);
+  environment.define(stmt.getName().lexeme, value);
   return std::any();
 }
 
 std::any Interpreter::visitBlockStmt(Block& stmt)
 {
-  Environment prev = this->env;
-  this->env = Environment(&prev);
-
-  // First reference (&) to the std::unique_ptr avoids the copying
-  for (const auto& statement : stmt.getStatements())
-    if (statement != nullptr)
-      execute(*statement);
-  this->env = prev;
+  executeBlock(stmt.getStatements(), Environment(this->environment));
   return std::any();
 }
 
@@ -166,6 +176,19 @@ std::any Interpreter::evaluate(Expr& expr)
 std::any Interpreter::execute(Stmt& stmt)
 {
   return stmt.accept(*this);
+}
+
+ void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment env)
+{
+  Environment prev = this->environment;
+  /* creates a new environment that 'inherits' the values of env */
+  this->environment = Environment(&env);
+
+  // Reference (&) to the std::unique_ptr avoids the copying
+  for (const auto& statement : statements)
+    if (statement != nullptr)
+      execute(*statement);
+  this->environment = prev;
 }
 
 std::any Interpreter::visitLogicalExpr(Logical& expr)
@@ -235,6 +258,25 @@ std::any Interpreter::visitLiteralExpr(Literal& expr)
   return expr.get_lit();
 }
 
+std::any Interpreter::visitCallExpr(Call& expr)
+{
+  /* lookup function from variable */
+  std::any callee = evaluate(expr.getCallee());
+
+  std::vector<std::any> args;
+  for (const auto& arg : expr.getArgs())
+  {
+    args.push_back(evaluate(*arg));
+  }
+
+  if (callee.type() != typeid(Callable))
+    throw std::make_pair(expr.getParen(), std::string("Object called is not a function")); 
+
+  if (args.size() != std::any_cast<Callable>(callee).getArity())
+    throw std::make_pair(expr.getParen(), std::string("Invalid number of arguments")); 
+  return std::any_cast<Callable>(callee).call(*this, args);
+}
+
 std::any Interpreter::visitUnaryExpr(Unary& expr)
 {
   std::any right = evaluate(expr.getRight());
@@ -252,12 +294,12 @@ std::any Interpreter::visitUnaryExpr(Unary& expr)
 
 std::any Interpreter::visitVariableExpr(Variable& expr)
 {
-  return env.get(expr.getName());
+  return environment.get(expr.getName());
 }
 
 std::any Interpreter::visitAssignExpr(Assign& expr)
 {
   std::any lit = evaluate(expr.getValue());
-  env.assign(expr.getName(), lit);
+  environment.assign(expr.getName(), lit);
   return lit;
 }

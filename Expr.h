@@ -3,8 +3,10 @@
 #include <memory>
 #include <any>
 #include <string>
+#include <vector>
 #include "Token.h"
 
+class Call;
 class Logical;
 class Binary;
 class Grouping;
@@ -17,6 +19,7 @@ template <typename T>
 class ExprVisitor
 {
 public:
+	virtual T visitCallExpr(Call& expr) = 0;
 	virtual T visitLogicalExpr(Logical& expr) = 0;
 	virtual T visitBinaryExpr(Binary &expr) = 0;
 	virtual T visitGroupingExpr(Grouping &expr) = 0;
@@ -30,6 +33,39 @@ class Expr
 {
 public:
 	virtual std::any accept(ExprVisitor<std::any> &visitor) = 0;
+};
+
+class Call : public Expr
+{
+public:
+	Call(std::unique_ptr<Expr> callee, const Token& paren, std::vector<std::unique_ptr<Expr>> args)
+		: callee(std::move(callee)), paren(paren), args(std::move(args))
+	{}
+
+	std::any accept(ExprVisitor<std::any>& visitor) override
+	{
+		return visitor.visitCallExpr(*this);
+	}
+
+	Expr& getCallee()
+	{
+		return *callee;
+	}
+
+	const Token& getParen()
+	{
+		return paren;
+	}
+
+	const std::vector<std::unique_ptr<Expr>>& getArgs()
+	{
+		return args;
+	}
+
+private:
+	std::unique_ptr<Expr> callee;
+	Token paren;
+  std::vector<std::unique_ptr<Expr>> args;
 };
 
 class Logical : public Expr

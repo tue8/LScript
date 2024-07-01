@@ -10,9 +10,11 @@ public:
   std::list<std::unique_ptr<Stmt>> parse();
 private:
   std::unique_ptr<Stmt> declaration();
+  std::unique_ptr<Stmt> function(std::string functionType);
   std::unique_ptr<Stmt> varDeclaration();
   std::unique_ptr<Stmt> statement();
   std::vector<std::unique_ptr<Stmt>> block();
+  std::unique_ptr<Stmt> returnStatement();
   std::unique_ptr<Stmt> breakStatement();
   std::unique_ptr<Stmt> continueStatement();
   std::unique_ptr<Stmt> expressionStatement();
@@ -21,6 +23,8 @@ private:
   std::unique_ptr<Stmt> whileStatement();
   std::unique_ptr<Stmt> printStatement();
   std::unique_ptr<Expr> primary();
+  std::unique_ptr<Expr> finishCall(std::unique_ptr<Expr> callee);
+  std::unique_ptr<Expr> call();
   std::unique_ptr<Expr> unary();
   std::unique_ptr<Expr> factor();
   std::unique_ptr<Expr> term();

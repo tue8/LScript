@@ -1,4 +1,6 @@
 #include "Environment.h"
+#include "Callable.h"
+#include <iostream>
 
 std::any Environment::get(const Token& name)
 {
@@ -8,7 +10,7 @@ std::any Environment::get(const Token& name)
   if (enclosing != nullptr)
     return enclosing->get(name);
 
-  throw (std::make_pair(name, std::string("Undefined variable: ").append(name.lexeme)));
+  throw (std::make_pair(name, "Undefined variable: " + name.lexeme));
 }
 
 void Environment::define(std::string name, std::any value)
@@ -30,5 +32,5 @@ void Environment::assign(const Token& name, std::any value)
     return;
   }
 
-  throw (std::make_pair(name, std::string("Undefined variable: ").append(name.lexeme)));
+  throw (std::make_pair(name, "Undefined variable: " + name.lexeme));
 }
