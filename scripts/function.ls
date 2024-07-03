@@ -1,6 +1,10 @@
-function hello(a, b)
+function func(a, b)
 {
-  return "Hello " + a + " and " + b;
+  function closureFunc()
+  {
+    return "Hello " + a + " and " + b;
+  }
+  return closureFunc();
 }
 
-print hello("people", "stuff");
+print func("people", "stuff");

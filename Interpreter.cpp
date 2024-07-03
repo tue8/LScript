@@ -99,7 +99,7 @@ std::any Interpreter::visitReturnStmt(Return& stmt)
 
 std::any Interpreter::visitFunctionStmt(Function& stmt)
 {
-  environment.define(stmt.getName().lexeme, Callable(&stmt));
+  environment.define(stmt.getName().lexeme, Callable(&stmt, &this->environment));
   return std::any();
 }
 
@@ -182,7 +182,7 @@ std::any Interpreter::execute(Stmt& stmt)
 {
   Environment prev = this->environment;
   /* creates a new environment that 'inherits' the values of env */
-  this->environment = Environment(&env);
+  this->environment = env;
 
   // Reference (&) to the std::unique_ptr avoids the copying
   for (const auto& statement : statements)
@@ -255,7 +255,7 @@ std::any Interpreter::visitGroupingExpr(Grouping& expr)
 
 std::any Interpreter::visitLiteralExpr(Literal& expr)
 {
-  return expr.get_lit();
+  return expr.getLit();
 }
 
 std::any Interpreter::visitCallExpr(Call& expr)

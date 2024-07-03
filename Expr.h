@@ -169,7 +169,7 @@ public:
 		return visitor.visitLiteralExpr(*this);
 	}
 
-	std::any get_lit()
+	std::any getLit()
 	{
 		return lit;
 	}

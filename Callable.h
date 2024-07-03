@@ -6,15 +6,14 @@
 class Callable
 {
 public:
-  Callable(Function* declaration)
-  {
-    this->declaration = declaration;
-    arity = declaration->getParams().size();
-  }
+  Callable(Function* declaration, Environment *closure)
+    : declaration(declaration), closure(closure)
+  {}
 
   std::any call(Interpreter& interpreter, const std::vector<std::any>& args)
   {
-    Environment environment = interpreter.getGlobalEnv();
+    Environment closureClone = *closure;
+    Environment environment = Environment(&closureClone);
     for (int i = 0; i < declaration->getParams().size(); i++)
       environment.define(declaration->getParams().at(i).lexeme,
                          args.at(i));
@@ -32,9 +31,9 @@ public:
 
   int getArity()
   {
-    return arity;
+    return declaration->getParams().size();
   }
 private:
-  int arity;
-  Function* declaration;
+  Function *declaration;
+  Environment *closure;
 };
