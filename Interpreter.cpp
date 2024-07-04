@@ -303,3 +303,8 @@ std::any Interpreter::visitAssignExpr(Assign& expr)
   environment.assign(expr.getName(), lit);
   return lit;
 }
+
+std::any Interpreter::visitLambdaExpr(Lambda& expr)
+{
+  return Callable(&expr, &this->environment);
+}

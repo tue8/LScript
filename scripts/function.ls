@@ -1,10 +1,9 @@
-function func(a, b)
+function func(a, b, callback)
 {
-  function closureFunc()
-  {
-    return "Hello " + a + " and " + b;
-  }
-  return closureFunc();
+  return callback("Hello " + a + " and " + b);
 }
 
-print func("people", "stuff");
+func("people", "stuff", function(msg)
+{
+  print msg;
+});

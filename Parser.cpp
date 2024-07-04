@@ -107,7 +107,7 @@ std::list<std::unique_ptr<Stmt>> Parser::parse()
 std::unique_ptr<Stmt> Parser::declaration()
 {
   try {
-    if (match(FUNC)) return function("function");
+    if (match(FUNC) && (peek().type == IDENTIFIER)) return function("function");
     if (match(VAR)) return varDeclaration();
     return statement();
   }
@@ -312,7 +312,7 @@ std::unique_ptr<Expr> Parser::call()
     }
   }
 
-  return expr;
+  return std::move(expr);
 }
 
 std::unique_ptr<Expr> Parser::unary()
@@ -321,8 +321,7 @@ std::unique_ptr<Expr> Parser::unary()
   {
     Token op = previous();
     auto right = unary();
-    std::unique_ptr<Expr> expr(new Unary(op, std::move(right)));
-    return std::move(expr);
+    return std::make_unique<Unary>(op, std::move(right));
   }
 
   return std::move(call());
@@ -433,8 +432,30 @@ std::unique_ptr<Expr> Parser::assignment()
   return std::move(expr);
 }
 
+std::unique_ptr<Expr> Parser::lambda()
+{
+  consume(LEFT_PAREN, "Expected '(' for lambda parameters.");
+  std::vector<Token> parameters;
+  if (!check(RIGHT_PAREN))
+  {
+    do
+    {
+      if (parameters.size() > 255)
+        error(peek(), "Hey! Fuck you! You cannot have more than 255 parameters.");
+      parameters.push_back(consume(IDENTIFIER, "Expected parameter name after ','"));
+    } while (match(COMMA));
+  }
+  consume(RIGHT_PAREN, "Expected ')' after parameters.");
+  consume(LEFT_BRACE, "Expected '{' after arrow");
+  auto body = block();
+  return std::make_unique<Lambda>(parameters, std::move(body));
+}
+
+
 std::unique_ptr<Expr> Parser::expression()
 {
+  if (match(FUNC))
+    return std::move(lambda());
  return std::move(assignment());
 }
 

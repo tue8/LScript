@@ -6,21 +6,34 @@
 class Callable
 {
 public:
+  Callable(Lambda* laDeclaration, Environment* closure)
+    : laDeclaration(laDeclaration), closure(closure)
+  {
+    params = laDeclaration->getParams();
+  }
+
   Callable(Function* declaration, Environment *closure)
     : declaration(declaration), closure(closure)
-  {}
+  {
+    params = declaration->getParams();
+  }
 
   std::any call(Interpreter& interpreter, const std::vector<std::any>& args)
   {
     Environment closureClone = *closure;
     Environment environment = Environment(&closureClone);
-    for (int i = 0; i < declaration->getParams().size(); i++)
-      environment.define(declaration->getParams().at(i).lexeme,
+
+
+
+    for (int i = 0; i < params.size(); i++)
+      environment.define(params.at(i).lexeme,
                          args.at(i));
  
     try
     {
-      interpreter.executeBlock(declaration->getBody(), environment);
+      interpreter.executeBlock((laDeclaration != nullptr) ? laDeclaration->getBody()
+                                                          :   declaration->getBody(),
+                                environment);
     }
     catch (std::any returnValue)
     {
@@ -31,9 +44,11 @@ public:
 
   int getArity()
   {
-    return declaration->getParams().size();
+    return params.size();
   }
 private:
-  Function *declaration;
-  Environment *closure;
+  Lambda* laDeclaration = nullptr;
+  Function* declaration = nullptr;
+  std::vector<Token> params;
+  Environment *closure = nullptr;
 };

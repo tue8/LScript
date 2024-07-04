@@ -33,6 +33,7 @@ private:
   std::unique_ptr<Expr> andExpr();
   std::unique_ptr<Expr> orExpr();
   std::unique_ptr<Expr> assignment();
+  std::unique_ptr<Expr> lambda();
   std::unique_ptr<Expr> expression();
 
   const Token& consume(TokenType type, std::string msg);

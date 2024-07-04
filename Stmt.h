@@ -279,3 +279,29 @@ private:
 	std::unique_ptr<Expr> condition;
 	std::unique_ptr<Stmt> body;
 };
+
+class Lambda : public Expr
+{
+public:
+	Lambda(std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body)
+		: params(params), body(std::move(body))
+	{}
+
+	std::any accept(ExprVisitor<std::any>& visitor) override
+	{
+		return visitor.visitLambdaExpr(*this);
+	}
+
+	const std::vector<Token>& getParams()
+	{
+		return params;
+	}
+
+	const std::vector<std::unique_ptr<Stmt>>& getBody()
+	{
+		return body;
+	}
+private:
+	std::vector<Token> params;
+	std::vector<std::unique_ptr<Stmt>> body;
+};

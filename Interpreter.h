@@ -31,6 +31,7 @@ private:
 	std::any visitUnaryExpr(Unary& expr) override;
 	std::any visitVariableExpr(Variable& expr) override;
 	std::any visitAssignExpr(Assign& expr) override;
+	std::any visitLambdaExpr(Lambda& expr) override;
 private:
 	Environment globals;
 	Environment environment;

@@ -6,6 +6,7 @@
 #include <vector>
 #include "Token.h"
 
+class Lambda;
 class Call;
 class Logical;
 class Binary;
@@ -19,6 +20,7 @@ template <typename T>
 class ExprVisitor
 {
 public:
+	virtual T visitLambdaExpr(Lambda& expr) = 0;
 	virtual T visitCallExpr(Call& expr) = 0;
 	virtual T visitLogicalExpr(Logical& expr) = 0;
 	virtual T visitBinaryExpr(Binary &expr) = 0;
