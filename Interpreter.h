@@ -8,7 +8,8 @@ class Interpreter : public ExprVisitor<std::any>, public StmtVisitor<std::any>
 {
 public:
 	void interpret(std::list<std::unique_ptr<Stmt>> statements);
-  Environment getGlobalEnv();
+	void setEnv(const Environment &env);
+	Environment getEnv();
   void executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment env);
 private:
 	std::any execute(Stmt& stmt);
@@ -33,6 +34,5 @@ private:
 	std::any visitAssignExpr(Assign& expr) override;
 	std::any visitLambdaExpr(Lambda& expr) override;
 private:
-	Environment globals;
 	Environment environment;
 };

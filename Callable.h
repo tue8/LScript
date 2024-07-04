@@ -1,5 +1,6 @@
 #include <vector>
 #include <any>
+#include <iostream>
 #include "Environment.h"
 #include "Interpreter.h"
 
@@ -20,23 +21,27 @@ public:
 
   std::any call(Interpreter& interpreter, const std::vector<std::any>& args)
   {
-    Environment closureClone = *closure;
-    Environment environment = Environment(&closureClone);
-
-
+    std::unique_ptr<Environment> closureClone(new Environment(*closure));
+    Environment funcEnvironment = Environment(closureClone.get());
 
     for (int i = 0; i < params.size(); i++)
-      environment.define(params.at(i).lexeme,
+      funcEnvironment.define(params.at(i).lexeme,
                          args.at(i));
  
+    Environment currEnvironment = interpreter.getEnv();
     try
     {
       interpreter.executeBlock((laDeclaration != nullptr) ? laDeclaration->getBody()
                                                           :   declaration->getBody(),
-                                environment);
+                                                          funcEnvironment);
     }
     catch (std::any returnValue)
     {
+      /*
+       * took me just a couple fucking hours to realize i had
+       * to set the environment back to normal after returning
+       */
+      interpreter.setEnv(currEnvironment);
       return returnValue;
     }
     return std::any();

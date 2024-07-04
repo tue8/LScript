@@ -7,7 +7,7 @@ class Environment
 {
 public:
   Environment() : enclosing(nullptr) {}
-  Environment(Environment* enclosing) : enclosing(enclosing) {}
+  Environment(Environment *enclosing) : enclosing(enclosing) {}
   std::any get(const Token& name);
   void define(std::string name, std::any value);
   void assign(const Token& name, std::any value);

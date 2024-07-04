@@ -86,15 +86,20 @@ void Interpreter::interpret(std::list<std::unique_ptr<Stmt>> statements)
   }
 }
 
-Environment Interpreter::getGlobalEnv()
+void Interpreter::setEnv(const Environment& env)
 {
-  globals = environment;
-  return globals;
+  environment = env;
+}
+
+Environment Interpreter::getEnv()
+{
+  return environment;
 }
 
 std::any Interpreter::visitReturnStmt(Return& stmt)
 {
-  throw evaluate(stmt.getValue());
+  std::any returnValue = evaluate(stmt.getValue());
+  throw returnValue;
 }
 
 std::any Interpreter::visitFunctionStmt(Function& stmt)
@@ -186,8 +191,12 @@ std::any Interpreter::execute(Stmt& stmt)
 
   // Reference (&) to the std::unique_ptr avoids the copying
   for (const auto& statement : statements)
+  {
     if (statement != nullptr)
+    {
       execute(*statement);
+    }
+  }
   this->environment = prev;
 }
 
