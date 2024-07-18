@@ -99,7 +99,9 @@ std::list<std::unique_ptr<Stmt>> Parser::parse()
   std::list<std::unique_ptr<Stmt>> statements;
   while (!isAtEnd())
   {
-    statements.push_back(std::move(declaration()));
+    auto dec = declaration();
+    if (dec != nullptr)
+        statements.push_back(std::move(dec));
   }
   return statements;
 }
