@@ -99,9 +99,9 @@ std::list<std::unique_ptr<Stmt>> Parser::parse()
   std::list<std::unique_ptr<Stmt>> statements;
   while (!isAtEnd())
   {
-    auto dec = declaration();
-    if (dec != nullptr)
-        statements.push_back(std::move(dec));
+    auto decl = declaration();
+    if (decl != nullptr)
+    	statements.push_back(std::move(decl));
   }
   return statements;
 }
@@ -298,6 +298,13 @@ std::unique_ptr<Expr> Parser::finishCall(std::unique_ptr<Expr> callee)
   return std::make_unique<Call>(std::move(callee), paren, std::move(args));
 }
 
+std::unique_ptr<Expr> Parser::noParenCall(std::unique_ptr<Expr> callee)
+{
+  std::vector<std::unique_ptr<Expr>> args;
+  args.push_back(std::move(expression()));
+  return std::make_unique<Call>(std::move(callee), previous(), std::move(args));
+}
+
 std::unique_ptr<Expr> Parser::call()
 {
   std::unique_ptr<Expr> expr = primary();
@@ -308,8 +315,14 @@ std::unique_ptr<Expr> Parser::call()
     {
       expr = finishCall(std::move(expr));
     }
+    else if (peek().type == IDENTIFIER ||
+	     peek().type == STRING ||
+	     peek().type == NUMBER)
+    {
+      expr = noParenCall(std::move(expr));
+    }
     else
-    { 
+    {
       break; 
     }
   }

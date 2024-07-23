@@ -21,8 +21,8 @@ public:
 
   std::any call(Interpreter& interpreter, const std::vector<std::any>& args)
   {
-    std::unique_ptr<Environment> closureClone(new Environment(*closure));
-    Environment funcEnvironment = Environment(closureClone.get());
+    Environment closureClone = *closure;
+    Environment funcEnvironment = Environment(&closureClone);
 
     for (int i = 0; i < params.size(); i++)
       funcEnvironment.define(params.at(i).lexeme,

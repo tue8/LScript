@@ -120,6 +120,7 @@ std::any Interpreter::visitContinueStmt(Continue& stmt)
 
 std::any Interpreter::visitWhileStmt(While& stmt)
 {
+  Environment currEnvironment = getEnv();
   while (isTruthy(evaluate(stmt.getCondition())))
   {
     try
@@ -128,8 +129,15 @@ std::any Interpreter::visitWhileStmt(While& stmt)
     }
     catch (TokenType loopSignal)
     {
-      if (loopSignal == BREAK)         break;
-      else if (loopSignal == CONTINUE) continue;
+      if (loopSignal == BREAK)
+      {
+        setEnv(currEnvironment);
+        break;
+      }
+      else if (loopSignal == CONTINUE)
+      {
+        continue;
+      }
     }
   }
 
