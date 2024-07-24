@@ -177,7 +177,9 @@ std::any Interpreter::visitVarStmt(Var& stmt)
 
 std::any Interpreter::visitBlockStmt(Block& stmt)
 {
-  executeBlock(stmt.getStatements(), Environment(this->environment));
+  Environment thang = this->environment;
+  executeBlock(stmt.getStatements(), Environment(&thang));
+  this->environment = thang;
   return std::any();
 }
 
@@ -193,9 +195,7 @@ std::any Interpreter::execute(Stmt& stmt)
 
  void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& statements, Environment env)
 {
-  Environment prev = this->environment;
-  /* creates a new environment that 'inherits' the values of env */
-  this->environment = env;
+   this->environment = env;
 
   // Reference (&) to the std::unique_ptr avoids the copying
   for (const auto& statement : statements)
@@ -205,7 +205,6 @@ std::any Interpreter::execute(Stmt& stmt)
       execute(*statement);
     }
   }
-  this->environment = prev;
 }
 
 std::any Interpreter::visitLogicalExpr(Logical& expr)

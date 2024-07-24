@@ -21,6 +21,7 @@ public:
 
   std::any call(Interpreter& interpreter, const std::vector<std::any>& args)
   {
+    std::any returnValue;
     Environment closureClone = *closure;
     Environment funcEnvironment = Environment(&closureClone);
 
@@ -28,23 +29,22 @@ public:
       funcEnvironment.define(params.at(i).lexeme,
                          args.at(i));
  
-    Environment currEnvironment = interpreter.getEnv();
     try
     {
       interpreter.executeBlock((laDeclaration != nullptr) ? laDeclaration->getBody()
                                                           :   declaration->getBody(),
                                                           funcEnvironment);
     }
-    catch (std::any returnValue)
+    catch (std::any ret)
     {
       /*
        * took me just a couple fucking hours to realize i had
        * to set the environment back to normal after returning
        */
-      interpreter.setEnv(currEnvironment);
-      return returnValue;
+      returnValue = ret;
     }
-    return std::any();
+    interpreter.setEnv(closureClone);
+    return returnValue;
   }
 
   int getArity()

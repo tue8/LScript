@@ -1,0 +1,19 @@
+var GLOBAL_A = "";
+var GLOBAL_B = "";
+
+function add_c(c)
+{
+  print GLOBAL_A + GLOBAL_B + c;
+}
+
+/*
+ * long ahh function name lol
+ */
+function set_ab_then_add_c(a, b)
+{
+  GLOBAL_A = a;
+  GLOBAL_B = b;
+  return add_c;
+}
+
+set_ab_then_add_c("a","b") "e";

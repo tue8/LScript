@@ -168,7 +168,7 @@ std::unique_ptr<Stmt> Parser::returnStatement()
 {
   Token token = previous();
   if (match(SEMICOLON))
-    return std::make_unique<Return>(token, nullptr);
+    return std::make_unique<Return>(token, std::make_unique<Literal>(std::any()));
   auto value = expression();
   consume(SEMICOLON, "Expected ';' after return statement");
   return std::make_unique<Return>(token, std::move(value));
