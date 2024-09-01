@@ -2,6 +2,10 @@
 #include <fstream>
 #include <sstream>
 
+#ifdef __EMSCRIPTEN__
+  #include <emscripten.h>
+#endif
+
 #include "Parser.h"
 #include "Lexer.h"
 #include "Interpreter.h"
@@ -10,19 +14,30 @@ Interpreter interpreter;
 
 static void run(std::string str)
 {
-	Lexer lexer = Lexer(str);
-	std::vector<Token> tokens = lexer.lexAll();
+  Lexer lexer = Lexer(str);
+  std::vector<Token> tokens = lexer.lexAll();
 #ifdef LDEBUG
   for (const auto& token : tokens)
   {
        std::cout << token << std::endl;
   }
 #endif
-	Parser parser = Parser(tokens);
-	std::list<std::unique_ptr<Stmt>> stmt_list = parser.parse();
-	if (!stmt_list.empty())
-		interpreter.interpret(std::move(stmt_list));
+  Parser parser = Parser(tokens);
+  std::list<std::unique_ptr<Stmt>> stmt_list = parser.parse();
+  if (!stmt_list.empty())
+    interpreter.interpret(std::move(stmt_list));
 }
+
+#ifdef __EMSCRIPTEN__
+extern "C"
+{
+  EMSCRIPTEN_KEEPALIVE
+  void crun(const char *c_str)
+  {
+    run(c_str);
+  }
+}
+#endif
 
 static int runFile(char *script_name)
 {

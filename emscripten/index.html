@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LScript</title>
+</head>
+<body>
+    <h1>Run LScript</h1>
+    <textarea id="userInput" name="userInput" rows="20" cols="50"></textarea>
+    <button onclick="processInput()">Run</button>
+    <textarea readonly id="output" name="output" rows="20" cols="50"></textarea>
+
+    <script>
+        // Load the Emscripten module
+
+        function output() {
+          var element = document.getElementById('output');
+          if (element) element.value = ''; // clear browser cache
+          return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            element.value += text + '\n';
+          };
+        }
+
+        var Module = {
+            onRuntimeInitialized: function() {
+                console.log("Emscripten runtime initialized");
+            },
+
+            print: output(),
+            printErr: output(),
+
+            
+        }
+
+
+        function processInput() {
+            var input = document.getElementById("userInput").value;
+            var result = Module.ccall('crun', 'string', ['string'], [input]);
+            console.log(result)
+        }
+    </script>
+    <script src="LScript.js"></script>
+</body>
+</html>
